@@ -59,6 +59,9 @@ def user_delete(db: Session, user: User):
 def wallet_get(db: Session, w_id: int):
     return db.query(Wallet).filter(Wallet.id == w_id).first()
 
+def wallet_get_by_user_and_wallet_name(db: Session, w_name: str, user_id: int):
+    return db.query(Wallet).filter(Wallet.wallet_name == w_name).filter(Wallet.user_id == user_id).first()
+
 def wallet_list(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Wallet).offset(skip).limit(limit).all()
 
@@ -71,11 +74,34 @@ def wallet_create(db: Session, obj):
     db.refresh(db_wallet)
     return db_wallet
 
-def get_walletstock(db: Session, ws_id: int):
+def wallet_delete(db: Session, wallet: Wallet):
+    db.delete(wallet)
+    db.commit()
+    return True
+
+def walletstocks_get(db: Session, ws_id: int):
     return db.query(WalletStock).filter(WalletStock.id == ws_id).first()
 
-def get_walletstocks(db: Session, skip: int = 0, limit: int = 100):
+def walletstocks_list(db: Session, skip: int = 0, limit: int = 100):
     return db.query(WalletStock).offset(skip).limit(limit).all()
+
+def walletstocks_delete(db: Session, stock: WalletStock):
+    db.delete(stock)
+    db.commit()
+    return True
+
+def walletstocks_create(db: Session, obj):
+    db_item = WalletStock(
+        wallet_id=obj["wallet_id"],
+        walletstock_pm=obj["walletstock_pm"],
+        walletstock_qtt=obj["walletstock_qtt"],
+        walletstock_ticker=obj["walletstock_ticker"])
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
 
 '''
 TODO

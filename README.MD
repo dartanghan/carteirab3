@@ -8,6 +8,6 @@ Projeto B3
 
 ```
 pip install -r requirements.txt
-uvicorn main:app
+uvicorn main:app --port 5000
 ```
 
