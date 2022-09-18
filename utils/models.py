@@ -1,5 +1,6 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float
-from sqlalchemy.orm import relationship, Session
+from datetime import datetime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, Date
+from sqlalchemy.orm import relationship, Session, joinedload
 from utils.dbutils import Base
 
 class User(Base):
@@ -23,6 +24,7 @@ class WalletStock(Base):
     id = Column(Integer, primary_key=True, index=True)
     walletstock_ticker = Column(String)
     walletstock_pm = Column(Float)
+    walletstock_buy_date = Column(Date, default=datetime.utcnow)
     walletstock_qtt = Column(Integer)
     wallet_id = Column(Integer, ForeignKey("wallet.id"))
     wallet = relationship("Wallet", back_populates="stocks")
@@ -57,7 +59,8 @@ def user_delete(db: Session, user: User):
     return True
 
 def wallet_get(db: Session, w_id: int):
-    return db.query(Wallet).filter(Wallet.id == w_id).first()
+    return db.query(Wallet).options(
+    joinedload(Wallet.stocks)).filter(Wallet.id == w_id).first()
 
 def wallet_get_by_user_and_wallet_name(db: Session, w_name: str, user_id: int):
     return db.query(Wallet).filter(Wallet.wallet_name == w_name).filter(Wallet.user_id == user_id).first()
@@ -89,6 +92,14 @@ def walletstocks_delete(db: Session, stock: WalletStock):
     db.delete(stock)
     db.commit()
     return True
+
+def walletstocks_update(db: Session, ws_id:int, obj: dict):
+    db_item = db.query(WalletStock).filter(WalletStock.id == ws_id).first()
+    for k,v in obj.items():
+        if k in obj and obj[k]:
+            setattr(db_item,k,obj[k])
+    db.commit()
+    return db_item
 
 def walletstocks_create(db: Session, obj):
     db_item = WalletStock(

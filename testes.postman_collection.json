@@ -1,0 +1,373 @@
+{
+	"info": {
+		"_postman_id": "216835a5-3c4f-473a-b353-c4b1e1c21ecb",
+		"name": "_B3_STOCKS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18527413"
+	},
+	"item": [
+		{
+			"name": "DART_B3 - /wallets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /wallets/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/wallets/1",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"wallets",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /wallets/performance/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/wallets/performance/1",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"wallets",
+						"performance",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /wallets",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\":1,\n    \"wallet_name\":\"Carteira 1\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /wallets",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\":1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /walletstocks",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/wallets/stocks/",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"wallets",
+						"stocks",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /walletstocks/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/wallets/stocks/1",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"wallets",
+						"stocks",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /walletstocks",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"wallet_id\":\"1\",\n    \"walletstock_ticker\": \"POMO3.SA\",\n    \"walletstock_qtt\": 100,\n    \"walletstock_pm\": 2.00,\n    \"walletstock_buy_date\": \"2021-09-18\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/wallets/stocks/",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"wallets",
+						"stocks",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /walletstocks/{id}",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\":2,\n    \"walletstock_ticker\": \"POMO3.SA\",\n    \"walletstock_qtt\": 100,\n    \"walletstock_pm\": 2.00,\n    \"walletstock_buy_date\": \"2021-09-18\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/wallets/stocks/2",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"wallets",
+						"stocks",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /walletstocks",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\":1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/wallets/stocks/",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"wallets",
+						"stocks",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/users",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /users/{user_id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/users/1",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"users",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /users",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "    {\n        \"user_password\": \"abc123\",\n        \"user_email\": \"dartanghan@gmail.com\",\n        \"user_is_active\": true,\n        \"id\": 1\n    }\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/users/",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DART_B3 - /users",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_email\": \"dartanghan@gmail.com\",\n    \"user_password\": \"abc123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/users/",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "PORT",
+			"value": "5000",
+			"type": "string"
+		},
+		{
+			"key": "HOSTNAME",
+			"value": "127.0.0.1",
+			"type": "string"
+		}
+	]
+}

@@ -1,6 +1,8 @@
+from datetime import date, datetime
 from fastapi import FastAPI, Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 from utils import models, dbutils
+from utils.finance import get_current_value_from_stocks,get_dividends_from_stocks
 
 dbutils.Base.metadata.create_all(bind=dbutils.engine)
 app = FastAPI()
@@ -22,13 +24,6 @@ def read_users(user_id: int, db: Session = Depends(get_db)):
     users = models.user_get(db, user_id)
     return users
 
-@app.post("/users/")
-def create_user(user: dict, db: Session = Depends(get_db)):
-    db_user = models.user_get_by_email(db, user["user_email"])
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return models.user_create(db=db, user=user)
-
 @app.delete("/users/")
 def delete_user(user: dict, db: Session = Depends(get_db)):
     db_user = models.user_get(db, user["id"])
@@ -37,10 +32,22 @@ def delete_user(user: dict, db: Session = Depends(get_db)):
     models.user_delete(db,db_user)
     return models.user_get(db, user["id"])
 
+@app.post("/users/")
+def create_user(user: dict, db: Session = Depends(get_db)):
+    db_user = models.user_get_by_email(db, user["user_email"])
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return models.user_create(db=db, user=user)
+
 @app.get("/wallets/")
 def read_wallets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = models.wallet_list(db, skip=skip, limit=limit)
     return users
+
+@app.get("/wallets/{wallet_id}")
+def read_wallets(wallet_id: int, db: Session = Depends(get_db)):
+    item = models.wallet_get(db, wallet_id)
+    return item
 
 @app.post("/wallets/")
 def create_wallet(data: dict, db: Session = Depends(get_db)):
@@ -56,6 +63,14 @@ def delete_wallets(data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Wallet not found")
     models.wallet_delete(db,db_item)
     return models.wallet_get(db, data["id"])
+
+@app.put("/wallets/stocks/{walletstock_id}")
+def update_wallet(walletstock_id: int, data: dict, db: Session = Depends(get_db)):
+    data["walletstock_buy_date"]= datetime.strptime(data["walletstock_buy_date"],"%Y-%m-%d") #TODO automatizar conversao data
+    db_item = models.walletstocks_update(db, walletstock_id, data)
+    if not db_item or not db_item.id:
+        raise HTTPException(status_code=400, detail="WalletStock not found")
+    return db_item
 
 @app.get("/wallets/stocks/")
 def read_walletstocks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -78,6 +93,29 @@ def delete_walletstocks(data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="WalletStock not found")
     models.walletstocks_delete(db,db_item)
     return models.walletstocks_get(db, data["id"])
+
+@app.get("/wallets/performance/{id}")
+def get_wallet_performance(id: int, db: Session = Depends(get_db)):
+    """Retorna a performance da carteira questionada
+    
+    Retorna a performance da carteira questionada:
+    - Valor atual
+    - Valor investido
+    - % Rentabilidade
+    - Dividendos recebidos
+
+    :param id:int id da carteira
+    """
+    retorno = {
+        "curr_value":0,
+        "paid_value":0,
+        "dividends":0,
+    }
+    wallet = models.wallet_get(db, id)
+    retorno["curr_value"]=get_current_value_from_stocks(wallet.stocks)
+    retorno["paid_value"]=[retorno["paid_value"]+st.walletstock_qtt*st.walletstock_pm for st in wallet.stocks][0]
+    retorno["dividends"]=get_dividends_from_stocks(wallet.stocks)
+    return retorno
 
 @app.get("/")
 def read_root():
