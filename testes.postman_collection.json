@@ -245,8 +245,48 @@
 			"response": []
 		},
 		{
+			"name": "DART_B3 - /login",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_email\": \"{{user_email}}\",\n    \"user_password\": \"{{user_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}:{{PORT}}/login",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "DART_B3 - /users",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2VtYWlsIjoiZGFydGFuZ2hhbkBnbWFpbC5jb20iLCJleHBpcmVzIjoxNjY1MTk1MzkyLjUzNTMwMjl9.Am2Y9x4NRrDSiCemgaIH3VbOQ6u0x7RNE0kBuLOAEE4",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -367,6 +407,16 @@
 		{
 			"key": "HOSTNAME",
 			"value": "127.0.0.1",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "dartanghan@gmail.com",
+			"type": "string"
+		},
+		{
+			"key": "user_password",
+			"value": "abc123",
 			"type": "string"
 		}
 	]
