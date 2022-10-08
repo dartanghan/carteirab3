@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 from utils import models, dbutils
 from utils.finance import get_current_value_from_stocks,get_dividends_from_stocks
+from utils.security import signJWT,decodeJWT
 
 dbutils.Base.metadata.create_all(bind=dbutils.engine)
 app = FastAPI()
@@ -14,13 +15,23 @@ def get_db():
     finally:
         db.close()
 
+@app.post("/login")
+def login(user: dict, db: Session = Depends(get_db)):
+    user = models.user_login(db,user['user_email'],user['user_password'])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return signJWT(user)
+
+
 @app.get("/users/")
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    print(token)
     users = models.user_list(db, skip=skip, limit=limit)
     return users
 
 @app.get("/users/{user_id}")
 def read_users(user_id: int, db: Session = Depends(get_db)):
+    print(token)
     users = models.user_get(db, user_id)
     return users
 
@@ -116,6 +127,8 @@ def get_wallet_performance(id: int, db: Session = Depends(get_db)):
     retorno["paid_value"]=[retorno["paid_value"]+st.walletstock_qtt*st.walletstock_pm for st in wallet.stocks][0]
     retorno["dividends"]=get_dividends_from_stocks(wallet.stocks)
     return retorno
+
+
 
 @app.get("/")
 def read_root():

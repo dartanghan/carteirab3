@@ -38,6 +38,9 @@ class WalletStock(Base):
 def user_get(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
 
+def user_login(db: Session, user_email:str, user_password:str):
+    return db.query(User).filter(User.user_email == user_email).filter(User.user_password == user_password).first()
+
 def user_get_by_email(db: Session, user_email: str):
     return db.query(User).filter(User.user_email == user_email).first()
 
