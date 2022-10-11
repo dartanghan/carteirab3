@@ -61,15 +61,16 @@ def user_delete(db: Session, user: User):
     db.commit()
     return True
 
-def wallet_get(db: Session, w_id: int):
+def wallet_get(db: Session, w_id: int, user_id:int):
     return db.query(Wallet).options(
-    joinedload(Wallet.stocks)).filter(Wallet.id == w_id).first()
+    joinedload(Wallet.stocks)).filter(Wallet.id == w_id) \
+        .filter(Wallet.user_id==user_id).first()
 
 def wallet_get_by_user_and_wallet_name(db: Session, w_name: str, user_id: int):
     return db.query(Wallet).filter(Wallet.wallet_name == w_name).filter(Wallet.user_id == user_id).first()
 
-def wallet_list(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Wallet).offset(skip).limit(limit).all()
+def wallet_list(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+    return db.query(Wallet).filter(Wallet.user_id==user_id).offset(skip).limit(limit).all()
 
 def wallet_create(db: Session, obj):
     db_wallet = Wallet(
@@ -85,36 +86,42 @@ def wallet_delete(db: Session, wallet: Wallet):
     db.commit()
     return True
 
-def walletstocks_get(db: Session, ws_id: int):
-    return db.query(WalletStock).filter(WalletStock.id == ws_id).first()
+def walletstocks_get(db: Session, ws_id: int, user_id: int):
+    return db.query(WalletStock).join(Wallet).filter(Wallet.user_id==user_id) \
+        .filter(WalletStock.id == ws_id).first()
 
-def walletstocks_list(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(WalletStock).offset(skip).limit(limit).all()
+def walletstocks_list(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+    wal = wallet_list(db, user_id)
+    return db.query(WalletStock).join(Wallet).filter(Wallet.user_id==user_id) \
+        .offset(skip).limit(limit).all()
 
 def walletstocks_delete(db: Session, stock: WalletStock):
     db.delete(stock)
     db.commit()
     return True
 
-def walletstocks_update(db: Session, ws_id:int, obj: dict):
-    db_item = db.query(WalletStock).filter(WalletStock.id == ws_id).first()
+def walletstocks_update(db: Session, ws_id:int, obj: dict, user_id: int):
+    wal = wallet_get(db, obj["wallet_id"], user_id)
+    db_item = db.query(WalletStock).filter(WalletStock.id == wal.id).first()
     for k,v in obj.items():
         if k in obj and obj[k]:
             setattr(db_item,k,obj[k])
     db.commit()
     return db_item
 
-def walletstocks_create(db: Session, obj):
-    db_item = WalletStock(
-        wallet_id=obj["wallet_id"],
-        walletstock_pm=obj["walletstock_pm"],
-        walletstock_qtt=obj["walletstock_qtt"],
-        walletstock_ticker=obj["walletstock_ticker"])
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
-
+def walletstocks_create(db: Session, obj, user_id: int):
+    wal = wallet_get(db, obj["wallet_id"], user_id)
+    if wal:
+        db_item = WalletStock(
+            wallet_id=wal.id,
+            walletstock_pm=obj["walletstock_pm"],
+            walletstock_qtt=obj["walletstock_qtt"],
+            walletstock_ticker=obj["walletstock_ticker"])
+        db.add(db_item)
+        db.commit()
+        db.refresh(db_item)
+        return db_item
+    return None
 
 
 '''
