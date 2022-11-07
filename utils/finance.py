@@ -45,10 +45,14 @@ def get_dividends_from_stocks(walletstocks:list) -> float:
     """
     retorno = 0
     for stock in walletstocks:
-        tk = yf.Ticker(stock.walletstock_ticker)
-        dividends = pd.DataFrame.from_dict(tk.dividends)
-        dividends.sort_values(by="Date")
-        values = dividends[stock.walletstock_buy_date:datetime.now().strftime("%Y-%m-%d")]
-        for val in values.loc[:,"Dividends"]: #certo seria pegar a coluna...
-            retorno += float(val)
+        try:
+            tk = yf.Ticker(stock.walletstock_ticker)
+            dividends = pd.DataFrame.from_dict(tk.dividends)
+            #dividends.sort_values(by="Date")
+            values = dividends[stock.walletstock_buy_date:datetime.now().strftime("%Y-%m-%d")]
+            print(values)
+            for val in values.loc[:,"Dividends"]: #certo seria pegar a coluna...
+                retorno += float(val)
+        except Exception as e:
+            print(f' [X] Error occuried {e}')
     return retorno

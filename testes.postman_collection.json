@@ -70,7 +70,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"user_id\":1,\n    \"wallet_name\":\"Carteira 1\"\n}",
+					"raw": "{\n    \"wallet_name\":\"Carteira 2\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -97,7 +97,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\":1\n}",
+					"raw": "{\n    \"id\":2\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -164,7 +164,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"wallet_id\":\"1\",\n    \"walletstock_ticker\": \"POMO3.SA\",\n    \"walletstock_qtt\": 100,\n    \"walletstock_pm\": 2.00,\n    \"walletstock_buy_date\": \"2021-09-18\"\n}",
+					"raw": "{\n    \"wallet_id\":\"2\",\n    \"walletstock_ticker\": \"BBDC3.SA\",\n    \"walletstock_qtt\": 310,\n    \"walletstock_pm\": 16.15,\n    \"walletstock_buy_date\": \"2022-04-18\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -246,11 +246,8 @@
 		},
 		{
 			"name": "DART_B3 - /login",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
@@ -378,12 +375,41 @@
 			"response": []
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "Bearer {{access_token}}",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",
 			"script": {
 				"type": "text/javascript",
 				"exec": [
+					"var settings = {",
+					"  url: pm.collectionVariables.get(\"HOSTNAME\")+':'+pm.collectionVariables.get(\"PORT\")+\"/login\",",
+					"  \"method\": \"POST\",",
+					"  \"header\": {",
+					"    \"Content-Type\": \"application/json\"",
+					"  },",
+					"  \"body\": {",
+					"    mode: 'raw',",
+					"    raw: JSON.stringify({ ",
+					"    \"user_email\": pm.collectionVariables.get(\"user_email\"), ",
+					"    \"user_password\": pm.collectionVariables.get(\"user_password\")",
+					"    })",
+					"  },",
+					"};",
+					"",
+					"pm.sendRequest(settings, (err, res) => {",
+					"    pm.collectionVariables.set(\"access_token\", res.json().access_token)",
+					"    console.log(res.json().access_token)",
+					"});",
 					""
 				]
 			}
@@ -418,6 +444,10 @@
 			"key": "user_password",
 			"value": "abc123",
 			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": ""
 		}
 	]
 }

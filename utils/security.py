@@ -28,10 +28,8 @@ def signJWT(user):
     return token_response(token)
 
 def decodeJWT(token: str = Depends(oauth2_scheme)) -> dict:
-    print(token)
     try:
         decoded_token = jwt.decode(token.split()[1], JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        print(decoded_token)
         return decoded_token if check_token_valid(decoded_token) else None
     except:
         return None
@@ -40,13 +38,3 @@ def check_token_valid(decoded_token:str) -> bool:
     if decoded_token["expires"] <= time.time():
         return False
     return True 
-
-# def token_check(func):
-#     def funcao_decorada(*args, **kwargs):
-#         # Verifica session['logado']
-#         if ('logado' not in session):
-#             # Retorna para a URL de login caso o usuário não esteja logado
-#             return redirect(url_for('index'))
-
-#         return f(*args, **kwargs)
-#     return funcao_decorada

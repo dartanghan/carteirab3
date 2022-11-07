@@ -51,6 +51,8 @@ def create_user(user: dict, db: Session = Depends(get_db)):
 
 @app.get("/wallets/")
 def read_wallets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    print(token)
+    print(limit)
     users = models.wallet_list(db,token["user_id"],skip=skip, limit=limit)
     return users
 
@@ -110,7 +112,7 @@ def delete_walletstocks(data: dict, db: Session = Depends(get_db), token: str = 
     return {"detail": "Ok"}
 
 @app.get("/wallets/performance/{id}")
-def get_wallet_performance(id: int, db: Session = Depends(get_db)):
+def get_wallet_performance(id: int, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
     """Retorna a performance da carteira questionada
     
     Retorna a performance da carteira questionada:
@@ -126,12 +128,11 @@ def get_wallet_performance(id: int, db: Session = Depends(get_db)):
         "paid_value":0,
         "dividends":0,
     }
-    wallet = models.wallet_get(db, id)
+    wallet = models.wallet_get(db, id,token["user_id"])
     retorno["curr_value"]=get_current_value_from_stocks(wallet.stocks)
     retorno["paid_value"]=[retorno["paid_value"]+st.walletstock_qtt*st.walletstock_pm for st in wallet.stocks][0]
     retorno["dividends"]=get_dividends_from_stocks(wallet.stocks)
     return retorno
-
 
 
 @app.get("/")
