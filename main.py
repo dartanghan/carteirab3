@@ -23,6 +23,8 @@ def login(user: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return signJWT(user)
 
+# Users
+####################################################################
 
 @app.get("/users/")
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -48,6 +50,9 @@ def create_user(user: dict, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     return models.user_create(db=db, user=user)
+
+# Wallet
+####################################################################
 
 @app.get("/wallets/")
 def list_wallets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
@@ -78,6 +83,9 @@ def delete_wallets(data: dict, db: Session = Depends(get_db), token: str = Depen
         raise HTTPException(status_code=404, detail="Wallet not found")
     models.wallet_delete(db,db_item)
     return {"detail": "Ok"}
+
+# WalletStocks
+####################################################################
 
 @app.put("/wallets/stocks/{walletstock_id}")
 def update_wallet(walletstock_id: int, data: dict, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
@@ -120,6 +128,8 @@ def delete_walletstocks(data: dict, db: Session = Depends(get_db), token: str = 
     models.walletstocks_delete(db,db_item)
     return {"detail": "Ok"}
 
+# WalletStocksHistory
+####################################################################
 
 @app.get("/wallets/stocks/history/")
 def list_walletstockshistory(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
