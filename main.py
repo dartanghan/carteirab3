@@ -50,16 +50,16 @@ def create_user(user: dict, db: Session = Depends(get_db)):
     return models.user_create(db=db, user=user)
 
 @app.get("/wallets/")
-def read_wallets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
-    print(token)
-    print(limit)
-    users = models.wallet_list(db,token["user_id"],skip=skip, limit=limit)
-    return users
+def list_wallets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    ob = models.wallet_list(db,token["user_id"],skip=skip, limit=limit)
+    return ob
 
 @app.get("/wallets/{wallet_id}")
 def read_wallets(wallet_id: int, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
-    item = models.wallet_get(db, wallet_id,token["user_id"])
-    return item
+    ob = models.wallet_get(db, wallet_id,token["user_id"])
+    if not ob:
+        raise HTTPException(status_code=404, detail="WalletStockHistory not found")
+    return ob
 
 @app.post("/wallets/")
 def create_wallet(data: dict, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
@@ -81,21 +81,30 @@ def delete_wallets(data: dict, db: Session = Depends(get_db), token: str = Depen
 
 @app.put("/wallets/stocks/{walletstock_id}")
 def update_wallet(walletstock_id: int, data: dict, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
-    print(token)
     data["walletstock_buy_date"]= datetime.strptime(data["walletstock_buy_date"],"%Y-%m-%d") #TODO automatizar conversao data
     db_item = models.walletstocks_update(db, walletstock_id, data, token["user_id"])
     if not db_item or not db_item.id:
         raise HTTPException(status_code=400, detail="WalletStock not found")
     return db_item
 
+@app.post("/wallets/stocks/sell/{walletstock_id}")
+def sell_wallet_stock(walletstock_id: int, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    print(token)
+    db_item = models.walletstocks_get(db, walletstock_id, token["user_id"])
+    if not db_item or not db_item.id:
+        raise HTTPException(status_code=400, detail="WalletStock not found")
+    return models.walletstocks_sell(db, walletstock_id, db_item)
+
 @app.get("/wallets/stocks/")
-def read_walletstocks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
-    users = models.walletstocks_list(db, token["user_id"], skip=skip, limit=limit)
-    return users
+def list_walletstocks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    ob = models.walletstocks_list(db, token["user_id"], skip=skip, limit=limit)
+    return ob
 
 @app.get("/wallets/stocks/{id}")
 def read_walletstocks(id: int, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
     ob = models.walletstocks_get(db, id, token["user_id"])
+    if not ob:
+        raise HTTPException(status_code=404, detail="WalletStock not found")
     return ob
 
 @app.post("/wallets/stocks/")
@@ -110,6 +119,28 @@ def delete_walletstocks(data: dict, db: Session = Depends(get_db), token: str = 
         raise HTTPException(status_code=404, detail="WalletStock not found")
     models.walletstocks_delete(db,db_item)
     return {"detail": "Ok"}
+
+
+@app.get("/wallets/stocks/history/")
+def list_walletstockshistory(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    ob = models.walletstockshistory_list(db, token["user_id"], skip=skip, limit=limit)
+    return ob
+
+@app.get("/wallets/stocks/history/{id}")
+def read_walletstockshistory(id: int, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    ob = models.walletstockshistory_get(db, id, token["user_id"])
+    if not ob:
+        raise HTTPException(status_code=404, detail="WalletStockHistory not found")
+    return ob
+
+@app.delete("/wallets/stocks/history/{id}")
+def delete_walletstockshistory(id: int, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    db_item = models.walletstockshistory_get(db, id, token["user_id"])
+    if not db_item:
+        raise HTTPException(status_code=404, detail="WalletStockHistory not found")
+    models.walletstockshistory_delete(db,db_item)
+    return {"detail": "Ok"}
+
 
 @app.get("/wallets/performance/{id}")
 def get_wallet_performance(id: int, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):

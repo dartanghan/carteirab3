@@ -18,6 +18,7 @@ class Wallet(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", back_populates="wallets")
     stocks = relationship("WalletStock", back_populates="wallet")
+    stocks_sold = relationship("WalletStockHistory", back_populates="wallet")
 
 class WalletStock(Base):
     __tablename__ = "walletstock"
@@ -28,6 +29,17 @@ class WalletStock(Base):
     walletstock_qtt = Column(Integer)
     wallet_id = Column(Integer, ForeignKey("wallet.id"))
     wallet = relationship("Wallet", back_populates="stocks")
+class WalletStockHistory(Base):
+    """Historico de negociacoes"""
+    __tablename__ = "walletstockhistory"
+    id = Column(Integer, primary_key=True, index=True)
+    wallet_id = Column(Integer, ForeignKey("wallet.id"))
+    walletstock_ticker = Column(String)
+    walletstock_buy_date = Column(Date, default=datetime.utcnow)
+    walletstock_sell_date = Column(Date, default=datetime.utcnow)
+    walletstock_qtt = Column(Integer)
+    walletstock_pm = Column(Float)
+    wallet = relationship("Wallet", back_populates="stocks_sold")
 
 ####
 #
@@ -61,6 +73,9 @@ def user_delete(db: Session, user: User):
     db.commit()
     return True
 
+# Wallet
+####################################################################
+
 def wallet_get(db: Session, w_id: int, user_id:int):
     return db.query(Wallet).options(
     joinedload(Wallet.stocks)).filter(Wallet.id == w_id) \
@@ -86,6 +101,9 @@ def wallet_delete(db: Session, wallet: Wallet):
     db.commit()
     return True
 
+# WalletStocks
+####################################################################
+
 def walletstocks_get(db: Session, ws_id: int, user_id: int):
     return db.query(WalletStock).join(Wallet).filter(Wallet.user_id==user_id) \
         .filter(WalletStock.id == ws_id).first()
@@ -109,6 +127,20 @@ def walletstocks_update(db: Session, ws_id:int, obj: dict, user_id: int):
     db.commit()
     return db_item
 
+def walletstocks_sell(db: Session, ws_id:int, obj: WalletStock):
+    ws_hist = WalletStockHistory(
+        wallet_id = ws_id,
+        walletstock_ticker = obj.walletstock_ticker,
+        walletstock_buy_date = obj.walletstock_buy_date,
+        walletstock_sell_date = datetime.now(),
+        walletstock_qtt = obj.walletstock_qtt,
+        walletstock_pm = obj.walletstock_pm,
+    )
+    db.add(ws_hist)
+    db.commit()
+    walletstocks_delete(db,obj)
+    return ws_hist
+
 def walletstocks_create(db: Session, obj, user_id: int):
     wal = wallet_get(db, obj["wallet_id"], user_id)
     if wal:
@@ -123,10 +155,19 @@ def walletstocks_create(db: Session, obj, user_id: int):
         return db_item
     return None
 
+# WalletStocksHistory
+####################################################################
 
-'''
-TODO
-- wallet_add_stock
-- wallet_del_stock
-- 
-'''
+def walletstockshistory_get(db: Session, id: int, user_id: int):
+    return db.query(WalletStockHistory).join(Wallet).filter(Wallet.user_id==user_id) \
+        .filter(WalletStockHistory.id == id).first()
+
+def walletstockshistory_list(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+    wal = wallet_list(db, user_id)
+    return db.query(WalletStockHistory).join(Wallet).filter(Wallet.user_id==user_id) \
+        .offset(skip).limit(limit).all()
+
+def walletstockshistory_delete(db: Session, stock: WalletStockHistory):
+    db.delete(stock)
+    db.commit()
+    return True
