@@ -108,6 +108,11 @@ def walletstocks_get(db: Session, ws_id: int, user_id: int):
     return db.query(WalletStock).join(Wallet).filter(Wallet.user_id==user_id) \
         .filter(WalletStock.id == ws_id).first()
 
+def walletstocks_get(db: Session, ticker: str, user_id: int):
+    return db.query(WalletStock).join(Wallet).filter(Wallet.user_id==user_id) \
+        .filter(WalletStock.walletstock_ticker.ilike(f"{ticker}%"))
+
+
 def walletstocks_list(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     wal = wallet_list(db, user_id)
     return db.query(WalletStock).join(Wallet).filter(Wallet.user_id==user_id) \
@@ -127,19 +132,34 @@ def walletstocks_update(db: Session, ws_id:int, obj: dict, user_id: int):
     db.commit()
     return db_item
 
-def walletstocks_sell(db: Session, ws_id:int, obj: WalletStock):
-    ws_hist = WalletStockHistory(
-        wallet_id = ws_id,
-        walletstock_ticker = obj.walletstock_ticker,
-        walletstock_buy_date = obj.walletstock_buy_date,
-        walletstock_sell_date = datetime.now(),
-        walletstock_qtt = obj.walletstock_qtt,
-        walletstock_pm = obj.walletstock_pm,
-    )
-    db.add(ws_hist)
+def walletstocks_sell(db: Session, ws_id:int, obj: WalletStock, user_id: int):
+    stocks = walletstocks_get(db,obj.walletstock_ticker,user_id)
+    selling_qtt_ctl=obj.walletstock_qtt # validando se temos o conteudo
+    print(f' ... Vendendo {obj.walletstock_ticker} ({obj.walletstock_qtt})')
+    for stock in stocks:
+        if selling_qtt_ctl > 0:
+            selling_qtt_ctl -= stock.walletstock_qtt
+            if selling_qtt_ctl < 0: # calculamos o que falta
+                selling_qtt = stock.walletstock_qtt-selling_qtt_ctl
+                print(f' ... Venda parcial {stock.walletstock_ticker} ({selling_qtt}/{stock.walletstock_qtt})')
+                stock.walletstock_qtt = stock.walletstock_qtt-selling_qtt
+            else:
+                print(f' ... Venda integral {stock.walletstock_ticker} ({stock.walletstock_qtt})')
+                selling_qtt = stock.walletstock_qtt
+                walletstocks_delete(db,stock)
+            ws_hist = WalletStockHistory(
+                wallet_id = ws_id,
+                walletstock_ticker = stock.walletstock_ticker,
+                walletstock_buy_date = stock.walletstock_buy_date,
+                walletstock_sell_date = datetime.now(),
+                walletstock_qtt = selling_qtt,
+                walletstock_pm = stock.walletstock_pm,
+            )
+            db.add(ws_hist)
+    if selling_qtt_ctl > 0:
+        db.rollback()
     db.commit()
-    walletstocks_delete(db,obj)
-    return ws_hist
+
 
 def walletstocks_create(db: Session, obj, user_id: int):
     wal = wallet_get(db, obj["wallet_id"], user_id)
@@ -149,6 +169,8 @@ def walletstocks_create(db: Session, obj, user_id: int):
             walletstock_pm=obj["walletstock_pm"],
             walletstock_qtt=obj["walletstock_qtt"],
             walletstock_ticker=obj["walletstock_ticker"])
+        if obj["walletstock_buy_date"]:
+            db_item.walletstock_buy_date=obj["walletstock_buy_date"]
         db.add(db_item)
         db.commit()
         db.refresh(db_item)

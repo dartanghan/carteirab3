@@ -95,13 +95,13 @@ def update_wallet(walletstock_id: int, data: dict, db: Session = Depends(get_db)
         raise HTTPException(status_code=400, detail="WalletStock not found")
     return db_item
 
-@app.post("/wallets/stocks/sell/{walletstock_id}")
-def sell_wallet_stock(walletstock_id: int, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
-    print(token)
-    db_item = models.walletstocks_get(db, walletstock_id, token["user_id"])
+@app.post("/wallets/stocks/sell/{wallet_id}")
+def sell_wallet_stock(wallet_id: int, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    print(token) # TODO permitir vender parcial...
+    db_item = models.walletstocks_get(db, wallet_id, token["user_id"])
     if not db_item or not db_item.id:
         raise HTTPException(status_code=400, detail="WalletStock not found")
-    return models.walletstocks_sell(db, walletstock_id, db_item)
+    return models.walletstocks_sell(db, wallet_id, db_item,token["user_id"] )
 
 @app.get("/wallets/stocks/")
 def list_walletstocks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
@@ -175,6 +175,12 @@ def get_wallet_performance(id: int, db: Session = Depends(get_db), token: str = 
     retorno["dividends"]=get_dividends_from_stocks(wallet.stocks)
     return retorno
 
+@app.get("/b3test")
+def b3test(db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    from utils.b3loader import load_data,load_file,perform_operations
+    dados = load_file()
+    dataframe = load_data(dados)
+    perform_operations(3,token["user_id"], dataframe, db)
 
 @app.get("/")
 def read_root():
