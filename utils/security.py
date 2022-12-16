@@ -18,6 +18,7 @@ def token_response(token: str):
         "access_token": token
     }
 
+
 def signJWT(user):
     payload = {
         "user_id": user.id,
@@ -27,14 +28,17 @@ def signJWT(user):
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return token_response(token)
 
+
 def decodeJWT(token: str = Depends(oauth2_scheme)) -> dict:
     try:
-        decoded_token = jwt.decode(token.split()[1], JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        decoded_token = jwt.decode(
+            token.split()[1], JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return decoded_token if check_token_valid(decoded_token) else None
     except:
         return None
 
-def check_token_valid(decoded_token:str) -> bool:
+
+def check_token_valid(decoded_token: str) -> bool:
     if decoded_token["expires"] <= time.time():
         return False
-    return True 
+    return True
