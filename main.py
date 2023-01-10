@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from fastapi import FastAPI, Depends, FastAPI, HTTPException,Response
+from fastapi import FastAPI, Depends, FastAPI, HTTPException,UploadFile
 from sqlalchemy.orm import Session
 from utils import models, dbutils
 from utils.finance import get_current_value_from_stocks,get_dividends_from_stocks
@@ -175,14 +175,23 @@ def get_wallet_performance(id: int, db: Session = Depends(get_db), token: str = 
     retorno["dividends"]=get_dividends_from_stocks(wallet.stocks)
     return retorno
 
+@app.post("/b3loader/{wallet_id}")
+def load_b3(file: UploadFile, wallet_id: int, db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
+    """Importa o extrato de negociacao do B3Investidor
+    
+    """
+    from utils.b3loader import load_data,load_file,perform_operations
+    dados = file.file.read()
+    dataframe = load_data(dados)
+    perform_operations(wallet_id,token["user_id"], dataframe, db)
+    return {"detail": "OK"}
+
 @app.get("/b3test")
 def b3test(db: Session = Depends(get_db), token: str = Depends(decodeJWT)):
-    from utils.b3loader import load_data,load_file,perform_operations
-    dados = load_file()
-    dataframe = load_data(dados)
-    perform_operations(3,token["user_id"], dataframe, db)
+    return 'OK'
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
+
 
