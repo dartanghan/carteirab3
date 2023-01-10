@@ -11,18 +11,21 @@ from utils.models import (
 from sqlalchemy.orm import Session
 import datetime
 
+
 def load_file():
-    with open('modelo_importacao.xlsx','rb') as file:
+    with open('modelo_importacao.xlsx', 'rb') as file:
         return file.read()
+
 
 def load_data(data):
     return pd.read_excel(data, engine="openpyxl")
 
-def perform_operations( wallet_id:int, user_id:int, dataframe: any, db: Session):
-    rows_to_process = [] # melhorar
-    for i,row in dataframe.iterrows():
+
+def perform_operations(wallet_id: int, user_id: int, dataframe: any, db: Session):
+    rows_to_process = []  # melhorar
+    for i, row in dataframe.iterrows():
         rows_to_process.append(row.tolist())
-    
+
     count = len(rows_to_process)
     while count > 0:
         count -= 1
@@ -30,19 +33,20 @@ def perform_operations( wallet_id:int, user_id:int, dataframe: any, db: Session)
         print(row[1])
         if row[1] == 'Venda':
             stock = WalletStock(
-                walletstock_pm= row[7],
-                walletstock_qtt= row[6],
-                walletstock_ticker= row[5],
-                walletstock_buy_date=datetime.datetime.strptime(row[0], '%d/%m/%Y'),
-                wallet_id= wallet_id
+                walletstock_pm=row[7],
+                walletstock_qtt=row[6],
+                walletstock_ticker=row[5],
+                walletstock_buy_date=datetime.datetime.strptime(
+                    row[0], '%d/%m/%Y'),
+                wallet_id=wallet_id
             )
             print(stock.walletstock_buy_date)
             try:
-                obj = walletstocks_sell(db, wallet_id, stock,user_id)
+                obj = walletstocks_sell(db, wallet_id, stock, user_id)
             except Exception as e:
                 print(e)
                 raise
-        else: 
+        else:
             stock = {
                 "walletstock_pm": row[7],
                 "walletstock_qtt": row[6],
@@ -50,6 +54,5 @@ def perform_operations( wallet_id:int, user_id:int, dataframe: any, db: Session)
                 "walletstock_buy_date": datetime.datetime.strptime(row[0], '%d/%m/%Y'),
                 "wallet_id": wallet_id
             }
-            obj = walletstocks_create(db,stock,user_id)
+            obj = walletstocks_create(db, stock, user_id)
     return 1
-

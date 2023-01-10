@@ -3,11 +3,16 @@ Projeto B3
 - Permite criar carteira própria
 - Permite saber ganhos por papel
 - Permite saber proventos por papel
+- Permite importar extrato da B3
 
 ### FORMA DE EXECUÇÃO
 
 ```sh
-pip install -r requirements.txt
+make run
+```
+OR
+```sh
+pip3 install -r requirements.txt
 uvicorn main:app --port 5000
 ```
 
