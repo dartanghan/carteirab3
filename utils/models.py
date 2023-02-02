@@ -154,22 +154,21 @@ def walletstocks_update(db: Session, ws_id: int, obj: dict, user_id: int):
 
 
 def walletstocks_sell(db: Session, ws_id: int, obj: WalletStock, user_id: int):
-    stocks = walletstocks_get(db, obj.walletstock_ticker, user_id)
+    stocks = walletstocks_get(db, obj.walletstock_ticker[:5], user_id)
     selling_qtt_ctl = obj.walletstock_qtt  # validando se temos o conteudo
     print(f' ... Vendendo {obj.walletstock_ticker} ({obj.walletstock_qtt})')
     for stock in stocks:
-        if selling_qtt_ctl > 0:
-            selling_qtt_ctl -= stock.walletstock_qtt
-            if selling_qtt_ctl < 0:  # calculamos o que falta
-                selling_qtt = stock.walletstock_qtt-selling_qtt_ctl
-                print(
-                    f' ... Venda parcial {stock.walletstock_ticker} ({selling_qtt}/{stock.walletstock_qtt})')
-                stock.walletstock_qtt = stock.walletstock_qtt-selling_qtt
-            else:
-                print(
-                    f' ... Venda integral {stock.walletstock_ticker} ({stock.walletstock_qtt})')
+        if selling_qtt_ctl > 0: # enquanto tivermos para venda...
+            print(f' ... bloquinho de {stock.walletstock_qtt} - {selling_qtt_ctl}')
+            if selling_qtt_ctl < stock.walletstock_qtt: # se venderemos menos do que tem no bloquinho...
                 selling_qtt = stock.walletstock_qtt
+                stock.walletstock_qtt -= selling_qtt_ctl
+                selling_qtt_ctl = 0
+            else: # vendendo mais do que tem no bloquinho
+                selling_qtt_ctl -= stock.walletstock_qtt
+                selling_qtt = selling_qtt_ctl
                 walletstocks_delete(db, stock)
+            
             ws_hist = WalletStockHistory(
                 wallet_id=ws_id,
                 walletstock_ticker=stock.walletstock_ticker,
@@ -179,19 +178,18 @@ def walletstocks_sell(db: Session, ws_id: int, obj: WalletStock, user_id: int):
                 walletstock_pm=stock.walletstock_pm,
             )
             db.add(ws_hist)
-    if selling_qtt_ctl > 0:
-        db.rollback()
-    db.commit()
+        db.commit()
 
 
 def walletstocks_create(db: Session, obj, user_id: int):
     wal = wallet_get(db, obj["wallet_id"], user_id)
+    print(f" ... Comprando {obj['walletstock_ticker']} ({obj['walletstock_qtt']})")
     if wal:
         db_item = WalletStock(
             wallet_id=wal.id,
             walletstock_pm=obj["walletstock_pm"],
             walletstock_qtt=obj["walletstock_qtt"],
-            walletstock_ticker=obj["walletstock_ticker"])
+            walletstock_ticker=obj["walletstock_ticker"][:5])
         if obj["walletstock_buy_date"]:
             db_item.walletstock_buy_date = obj["walletstock_buy_date"]
         db.add(db_item)
